@@ -9,6 +9,5 @@ Repo to hold various small scripts (2 files max per script)
 ```math
 S = \left\{ a \mid a < n, \quad \forall k \in \{1, 2, \dots, n\}, \quad \exists m \in \mathbb{Z} \text{ such that } ma \equiv k \pmod{n} \right\}
 ```
-
 - Factorion - Work out the <a href="https://en.wikipedia.org/wiki/Factorion" >Factorions</a> of different bases (i.e. base 10).
 - Infinite series probability - Work out the average number of heads you would flip if you keep flipping until you get tails.
