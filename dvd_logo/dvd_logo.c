@@ -5,6 +5,7 @@
 
 #define WIDTH 400
 #define HEIGHT 300
+
 // C:\Users\evilm\mingw64\bin\gcc.exe dvd_logo.c -o dvd.exe -lgdi32 -luser32
 
 HDC hdc;
@@ -20,23 +21,31 @@ int coordinates[2]; // centre of logo
 int size[2] = {10, 10}; // size of logo
 int directionStatic[2] = {1,2};
 int directionCurrent[2] = {1,2};
+COLORREF logoColour = RGB(255,255,255);
 
-void initLogo(){
+void paintLogo(int white){
+    if(white){
+        logoColour = RGB(255,255,255);
+    }else{
+        logoColour = RGB(rand() % 255 + 1, rand() % 256, rand() % 256);
+    }
+
     for(int i = coordinates[0]-size[0]; i < coordinates[0]+size[0]; i++){
         for(int j = coordinates[1]-size[1]; j < coordinates[1]+size[1]; j++){
-            pixels[i + j * WIDTH] = RGB(255,255,255);
+            pixels[i + j * WIDTH] = logoColour;
         } 
     }
 }
+
 
 void moveLogo(int direction){
     // left
     if(direction == 0){
         for(int i = coordinates[0]-size[0] - 1; i <= coordinates[0]+size[0]; i++){
             for(int j = coordinates[1]-size[1]; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] == RGB(255,255,255)){
+                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
                     pixels[i + j * WIDTH] = RGB(0,0,0);
-                    pixels[i - 1 + j * WIDTH] = RGB(255,255,255);
+                    pixels[i - 1 + j * WIDTH] = logoColour;
                 }
             } 
         }
@@ -46,9 +55,9 @@ void moveLogo(int direction){
     else if(direction == 1){
         for(int i = coordinates[0]-size[0]; i <= coordinates[0]+size[0]; i++){
             for(int j = coordinates[1]-size[1] - 1; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] == RGB(255,255,255)){
+                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
                     pixels[i + j * WIDTH] = RGB(0,0,0);
-                    pixels[i + (j - 1) * WIDTH] = RGB(255,255,255);
+                    pixels[i + (j - 1) * WIDTH] = logoColour;
                 }
             } 
         }
@@ -58,9 +67,9 @@ void moveLogo(int direction){
     else if(direction == 2){
         for(int  i = coordinates[0]+size[0] + 1; i >= coordinates[0]-size[0]; i--){
             for(int j = coordinates[1]-size[1]; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] == RGB(255,255,255)){
+                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
                     pixels[i + j * WIDTH] = RGB(0,0,0);
-                    pixels[i + 1 + j * WIDTH] = RGB(255,255,255);
+                    pixels[i + 1 + j * WIDTH] = logoColour;
                 }
             } 
         }
@@ -70,9 +79,9 @@ void moveLogo(int direction){
     else if(direction == 3){
         for(int i = coordinates[0]-size[0]; i <= coordinates[0]+size[0]; i++){
             for(int  j = coordinates[1]+size[1]+1; j >= coordinates[1]-size[1]; j--){
-                if(pixels[i + j * WIDTH] == RGB(255,255,255)){
+                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
                     pixels[i + j * WIDTH] = RGB(0,0,0);
-                    pixels[i + (j + 1) * WIDTH] = RGB(255,255,255);
+                    pixels[i + (j + 1) * WIDTH] = logoColour;
                 }
             } 
         }
@@ -125,11 +134,13 @@ void animateLogo(){
     if(coordinates[0] + size[0] >= clientWidth || coordinates[0] - size[0] <= 0){
         directionStatic[0] = randomiseDirection(-directionStatic[0]);
         directionCurrent[0] = directionStatic[0];
+        paintLogo(0);
     }
 
     if(coordinates[1] + size[1] >= clientHeight || coordinates[1] - size[1] <= 0){
         directionStatic[1] = randomiseDirection(-directionStatic[1]);
         directionCurrent[1] = directionStatic[1];
+        paintLogo(0);
     }
     Sleep(1);
 }
@@ -202,7 +213,7 @@ int main() {
     coordinates[1] = clientHeight / 2;
     
     // initialise our cars array and setup roads
-    initLogo();
+    paintLogo(1);
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
