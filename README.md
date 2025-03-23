@@ -11,3 +11,5 @@ S = \left\{ a \mid a < n, \quad \forall k \in \{1, 2, \dots, n\}, \quad \exists 
 ```
 - Factorion - Work out the <a href="https://en.wikipedia.org/wiki/Factorion" >Factorions</a> of different bases (i.e. base 10).
 - Infinite series probability - Work out the average number of heads you would flip if you keep flipping until you get tails.
+- DvD logo - a simple C bouncing animation for a logo  
+<img alt="dvd-logo" src="./media/dvd.png" width="300" />
