@@ -2,6 +2,45 @@ import time
 import shutil
 import sys
 
+import math
+
+def append_mountains(thirdHeight, width):
+  frame = [""] * thirdHeight
+  mountainAngle = thirdHeight / (width / 4)
+  charLeft = ''
+  charRight = ''
+  if mountainAngle < 0.5:
+    charLeft = '-'
+    charRight = '-'
+  elif mountainAngle < 1:
+    charLeft = '/'
+    charRight = '\\'
+  else:
+    charLeft = '|'
+    charRight = '|'
+  
+  currentHeight = thirdHeight - 1
+  goingUp = True
+  
+  print(mountainAngle)
+  for i in range(0, width):
+    rowPainted = False
+    for j in range(0, thirdHeight):
+      if not rowPainted and j == math.floor(currentHeight):
+        rowPainted = True
+        if (not goingUp and j == thirdHeight - 1) or (goingUp and j == 0):
+          goingUp = not goingUp
+        if goingUp:
+          frame[j] += charLeft
+          currentHeight -= mountainAngle
+        else:
+          frame[j] += charRight
+          currentHeight += mountainAngle
+      else:
+        frame[j] += " "
+  
+  return frame
+
 def animate_bar():
     width, height = shutil.get_terminal_size((80, 24))
     center = width // 2
@@ -9,20 +48,24 @@ def animate_bar():
 
     while True:
         # Move cursor back to top-left instead of clearing
-        sys.stdout.write("\033[H")
+        print("\033[H", end="", flush=True)
+        sys.stdout.flush()
         #sys.stdout.write("\033[" + str(height//2) + ";0H")
 
         interval = pos % 3
-        frame = []
         halfHeight = height //2
         thirdHeight = height // 3
+        
+        frame = append_mountains(thirdHeight, width - 1)
+        
         bar = False
-        for i in range(0, height):
-            if(i < thirdHeight):
-              frame.append('')
+        for i in range(thirdHeight - 1, height):
+            if(i == thirdHeight - 1):
+              frame.append("-" * (width - 1))
               continue
             
             row = ""
+
             if(i < thirdHeight * 2):
               if (i - interval) % 3 == 0 and i > thirdHeight:
                 bar = True
@@ -34,14 +77,14 @@ def animate_bar():
               else:
                 bar = False
               
-            row += " " * (center - 5 - i + height//3) + "." + " " * (4 + i - height//3)
+            row += " " * (center - 3 - i + height//3) + "." + " " * (2 + i - height//3)
             
             if bar:
                 row += "|"
             else:
                 row += " "
                 
-            row += " " * (4 + i - height//3) + "."
+            row += " " * (2 + i - height//3) + "."
 
             frame.append(row)
 
