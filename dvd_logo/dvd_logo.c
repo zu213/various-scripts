@@ -17,139 +17,239 @@ DWORD pixels[WIDTH * HEIGHT] = {0}; // Pixels array
 int clientWidth;
 int clientHeight;
 
-int coordinates[2]; // centre of logo
-int size[2] = {10, 10}; // size of logo
-int directionStatic[2] = {1,2};
-int directionCurrent[2] = {1,2};
-COLORREF logoColour = RGB(255,255,255);
+int coordinates[2];     // centre of logo
+int size[2] = {31, 11}; // size of logo
+int directionStatic[2] = {1, 2};
+int directionCurrent[2] = {1, 2};
+COLORREF logoColour = RGB(255, 255, 255);
 
-void paintLogo(int white){
-    if(white){
-        logoColour = RGB(255,255,255);
-    }else{
-        logoColour = RGB(rand() % 255 + 1, rand() % 256, rand() % 256);
+void initialPaintLogo()
+{
+    FILE *file = fopen("dvd_logo.txt", "r");
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+    int matrix[size[1]][size[0]];
+    char line[size[0] + 2]; // +2 for '\n' and '\0'
+    int rows = 0, cols = 0;
+    while (fgets(line, sizeof(line), file) != NULL && rows < size[1])
+    {
+        cols = strlen(line);
+
+        // remove newline at the end if present
+        if (line[cols - 1] == '\n')
+        {
+            line[--cols] = '\0';
+        }
+
+        for (int j = 0; j < cols && j < size[0]; j++)
+        {
+            if (line[j] == '0' || line[j] == '1')
+            {
+                matrix[rows][j] = line[j] - '0'; // convert char '0'/'1' -> int 0/1
+            }
+            else
+            {
+                fprintf(stderr, "Invalid character '%c' at row %d col %d\n", line[j], rows, j);
+                fclose(file);
+                return;
+            }
+        }
+        rows++;
     }
 
-    for(int i = coordinates[0]-size[0]; i < coordinates[0]+size[0]; i++){
-        for(int j = coordinates[1]-size[1]; j < coordinates[1]+size[1]; j++){
-            pixels[i + j * WIDTH] = logoColour;
-        } 
+    fclose(file);
+
+    // Logo dvd drawing
+    COLORREF w = RGB(255, 255, 255);
+    COLORREF b = RGB(0, 0, 0);
+
+    int twoSizeX = 2 * size[0];
+    int twoSizeY = 2 * size[1];
+
+    // printf("%d", matrix[4][14]);
+    for (int i = 0; i < twoSizeY; i++)
+    {
+        for (int j = 0; j < twoSizeX; j++)
+        {
+            if (matrix[i / 2][j / 2] == 1)
+            {
+                pixels[(j + coordinates[0] - size[0]) +
+                       (i + coordinates[1] - size[1]) * WIDTH] = w;
+            }
+        }
     }
 }
 
+void paintLogo(int white)
+{
+    if (white)
+    {
+        logoColour = RGB(255, 255, 255);
+    }
+    else
+    {
+        logoColour = RGB(rand() % 255 + 1, rand() % 256, rand() % 256);
+    }
 
-void moveLogo(int direction){
+    for (int i = coordinates[0] - size[0]; i < coordinates[0] + size[0]; i++)
+    {
+        for (int j = coordinates[1] - size[1]; j < coordinates[1] + size[1]; j++)
+        {
+            if (pixels[i + j * WIDTH] != RGB(0, 0, 0))
+            {
+                pixels[i + j * WIDTH] = logoColour;
+            }
+        }
+    }
+}
+
+void moveLogo(int direction)
+{
     // left
-    if(direction == 0){
-        for(int i = coordinates[0]-size[0] - 1; i <= coordinates[0]+size[0]; i++){
-            for(int j = coordinates[1]-size[1]; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
-                    pixels[i + j * WIDTH] = RGB(0,0,0);
+    if (direction == 0)
+    {
+        for (int i = coordinates[0] - size[0] - 1; i <= coordinates[0] + size[0]; i++)
+        {
+            for (int j = coordinates[1] - size[1]; j <= coordinates[1] + size[1]; j++)
+            {
+                if (pixels[i + j * WIDTH] != RGB(0, 0, 0))
+                {
+                    pixels[i + j * WIDTH] = RGB(0, 0, 0);
                     pixels[i - 1 + j * WIDTH] = logoColour;
                 }
-            } 
+            }
         }
         coordinates[0]--;
     }
     // up
-    else if(direction == 1){
-        for(int i = coordinates[0]-size[0]; i <= coordinates[0]+size[0]; i++){
-            for(int j = coordinates[1]-size[1] - 1; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
-                    pixels[i + j * WIDTH] = RGB(0,0,0);
+    else if (direction == 1)
+    {
+        for (int i = coordinates[0] - size[0]; i <= coordinates[0] + size[0]; i++)
+        {
+            for (int j = coordinates[1] - size[1] - 1; j <= coordinates[1] + size[1]; j++)
+            {
+                if (pixels[i + j * WIDTH] != RGB(0, 0, 0))
+                {
+                    pixels[i + j * WIDTH] = RGB(0, 0, 0);
                     pixels[i + (j - 1) * WIDTH] = logoColour;
                 }
-            } 
+            }
         }
         coordinates[1]--;
     }
     // right
-    else if(direction == 2){
-        for(int  i = coordinates[0]+size[0] + 1; i >= coordinates[0]-size[0]; i--){
-            for(int j = coordinates[1]-size[1]; j <= coordinates[1]+size[1]; j++){
-                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
-                    pixels[i + j * WIDTH] = RGB(0,0,0);
+    else if (direction == 2)
+    {
+        for (int i = coordinates[0] + size[0] + 1; i >= coordinates[0] - size[0]; i--)
+        {
+            for (int j = coordinates[1] - size[1]; j <= coordinates[1] + size[1]; j++)
+            {
+                if (pixels[i + j * WIDTH] != RGB(0, 0, 0))
+                {
+                    pixels[i + j * WIDTH] = RGB(0, 0, 0);
                     pixels[i + 1 + j * WIDTH] = logoColour;
                 }
-            } 
+            }
         }
         coordinates[0]++;
     }
     // down
-    else if(direction == 3){
-        for(int i = coordinates[0]-size[0]; i <= coordinates[0]+size[0]; i++){
-            for(int  j = coordinates[1]+size[1]+1; j >= coordinates[1]-size[1]; j--){
-                if(pixels[i + j * WIDTH] != RGB(0,0,0)){
-                    pixels[i + j * WIDTH] = RGB(0,0,0);
+    else if (direction == 3)
+    {
+        for (int i = coordinates[0] - size[0]; i <= coordinates[0] + size[0]; i++)
+        {
+            for (int j = coordinates[1] + size[1] + 1; j >= coordinates[1] - size[1]; j--)
+            {
+                if (pixels[i + j * WIDTH] != RGB(0, 0, 0))
+                {
+                    pixels[i + j * WIDTH] = RGB(0, 0, 0);
                     pixels[i + (j + 1) * WIDTH] = logoColour;
                 }
-            } 
+            }
         }
         coordinates[1]++;
     }
 }
 
-int randomiseDirection(int i){
-    int randomNumber =  rand() % (10);
+int randomiseDirection(int i)
+{
+    int randomNumber = rand() % (10);
     int modifier = 0;
-    if(randomNumber - i > 6){
+    if (randomNumber - i > 6)
+    {
         modifier = 1;
-    }else if(randomNumber + i < 3){
+    }
+    else if (randomNumber + i < 3)
+    {
         modifier = -1;
     }
 
-    if(i + modifier != 0){
+    if (i + modifier != 0)
+    {
         return i + modifier;
     }
     return i;
 }
-// main animation function - 
-void animateLogo(){
-    //it will loop through the direction current until 0 then refresh to static
-    // if a wall is hit the directionc urrent and static are updated
-    if(directionCurrent[0] != 0){
-        if(directionCurrent[0] < 0){
+// main animation function -
+void animateLogo()
+{
+    // it will loop through the direction current until 0 then refresh to static
+    //  if a wall is hit the directionc urrent and static are updated
+    if (directionCurrent[0] != 0)
+    {
+        if (directionCurrent[0] < 0)
+        {
             moveLogo(0);
             directionCurrent[0]++;
-        }else{
-           moveLogo(2);
+        }
+        else
+        {
+            moveLogo(2);
             directionCurrent[0]--;
         }
     }
-    if(directionCurrent[1] != 0){
-        if(directionCurrent[1] < 0){
+    if (directionCurrent[1] != 0)
+    {
+        if (directionCurrent[1] < 0)
+        {
             moveLogo(1);
             directionCurrent[1]++;
-        }else{
+        }
+        else
+        {
             moveLogo(3);
             directionCurrent[1]--;
         }
     }
-    if(!directionCurrent[0] && !directionCurrent[1]){
+    if (!directionCurrent[0] && !directionCurrent[1])
+    {
         directionCurrent[0] = directionStatic[0];
         directionCurrent[1] = directionStatic[1];
     }
 
     // now check if it is on boundary
-    if(coordinates[0] + size[0] >= clientWidth || coordinates[0] - size[0] <= 0){
+    if (coordinates[0] + size[0] >= clientWidth || coordinates[0] - size[0] <= 0)
+    {
         directionStatic[0] = randomiseDirection(-directionStatic[0]);
         directionCurrent[0] = directionStatic[0];
         paintLogo(0);
     }
 
-    if(coordinates[1] + size[1] >= clientHeight || coordinates[1] - size[1] <= 0){
+    if (coordinates[1] + size[1] >= clientHeight || coordinates[1] - size[1] <= 0)
+    {
         directionStatic[1] = randomiseDirection(-directionStatic[1]);
         directionCurrent[1] = directionStatic[1];
         paintLogo(0);
     }
-    Sleep(1);
+    Sleep(10);
 }
 
-
-
-
 // function to handle screen setup
-void setupScreen(HWND hwnd, WPARAM wParam, LPARAM lParam){
+void setupScreen(HWND hwnd, WPARAM wParam, LPARAM lParam)
+{
     hdc = GetDC(hwnd);
     hdcMem = CreateCompatibleDC(hdc);
     hBitmap = CreateCompatibleBitmap(hdc, WIDTH, HEIGHT);
@@ -167,7 +267,8 @@ void setupScreen(HWND hwnd, WPARAM wParam, LPARAM lParam){
 
 int counter = 0;
 
-void editScreen(HWND hwnd, WPARAM wParam, LPARAM lParam){
+void editScreen(HWND hwnd, WPARAM wParam, LPARAM lParam)
+{
     // Main function to animate cars
     animateLogo();
     // Update the bitmap with modified pixel data
@@ -175,23 +276,26 @@ void editScreen(HWND hwnd, WPARAM wParam, LPARAM lParam){
     BitBlt(hdc, 0, 0, WIDTH, HEIGHT, hdcMem, 0, 0, SRCCOPY);
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    switch (uMsg) {
-        case WM_PAINT:
-            editScreen(hwnd, wParam, lParam);
-            break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            break;
-        default:
-            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        editScreen(hwnd, wParam, lParam);
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
     return 0;
 }
 
-int main() {
+int main()
+{
     srand(time(NULL));
-    
+
     // Setup window
     WNDCLASS wc = {0};
     wc.lpfnWndProc = WindowProc;
@@ -211,12 +315,13 @@ int main() {
     clientHeight = rect.bottom - rect.top;
     coordinates[0] = clientWidth / 2;
     coordinates[1] = clientHeight / 2;
-    
-    // initialise our cars array and setup roads
-    paintLogo(1);
+
+    // initialise the logo
+    initialPaintLogo();
 
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
