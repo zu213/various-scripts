@@ -22,7 +22,6 @@ def append_mountains(thirdHeight, width):
   currentHeight = thirdHeight - 1
   goingUp = True
   
-  print(mountainAngle)
   for i in range(0, width):
     rowPainted = False
     for j in range(0, thirdHeight):
@@ -41,59 +40,58 @@ def append_mountains(thirdHeight, width):
   
   return frame
 
-def animate_bar():
-    width, height = shutil.get_terminal_size((80, 24))
-    center = width // 2
-    pos = 0
+def animate_road():
+  width, height = shutil.get_terminal_size((80, 24))
+  pos = 0
+  initialFrame = append_mountains(height//3, width - 1)
+  initialFrame.append("-" * (width - 1))
+
+  while True:
+    # Move cursor back to top-left instead of clearing
+    #sys.stdout.write("\033[" + str(height//2) + ";0H")
+    print("\033[H", end="", flush=True)
+    sys.stdout.flush()
+    # get current frame
+    frame = draw_frame_of_road(initialFrame, height, width, height // 3, width // 2, pos % 3)
+    # animate
+    pos = (pos + 1) % height
+    sys.stdout.write("\n".join(frame))
+    sys.stdout.flush()
+
+    time.sleep(0.1)
+       
+def draw_frame_of_road(initialFrame, height, width, thirdHeight, center, interval):
     
-    initialFrame = append_mountains(height//3, width - 1)
+    frame = initialFrame[:]
+    
+    # Draw the road below the mountains
+    for i in range(thirdHeight, height):
+        row = ""
 
-    while True:
-        # Move cursor back to top-left instead of clearing
-        print("\033[H", end="", flush=True)
-        sys.stdout.flush()
-        #sys.stdout.write("\033[" + str(height//2) + ";0H")
-
-        interval = pos % 3
-        thirdHeight = height // 3
+        # If in middle third we do a bar every 3 otherwise we do two then two spaces
+        if i < thirdHeight * 2:
+            bar = (i > thirdHeight) and ((i - interval) % 3 == 0)
+        else:
+            bar = (i - (interval + 1)) % 4 in (0, 1)
         
-        frame = initialFrame[:]
+        # Populate row
+        row += " " * (center - 3 - i + thirdHeight) + "." + " " * (2 + i - thirdHeight)
+        row += "|" if bar else " "
+        row += " " * (2 + i - thirdHeight) + "."
         
-        bar = False
-        for i in range(thirdHeight - 1, height):
-            if(i == thirdHeight - 1):
-              frame.append("-" * (width - 1))
-              continue
-            
-            row = ""
+        frame.append(row)
 
-            if(i < thirdHeight * 2):
-              if (i - interval) % 3 == 0 and i > thirdHeight:
-                bar = True
-              else:
-                bar = False
-            else:
-              if (i - (interval + 1)) % 4 == 0 or (i - (interval + 1)) % 4 == 1:
-                bar = True
-              else:
-                bar = False
-              
-            row += " " * (center - 3 - i + height//3) + "." + " " * (2 + i - height//3)
-            
-            if bar:
-                row += "|"
-            else:
-                row += " "
-                
-            row += " " * (2 + i - height//3) + "."
+    return frame
 
-            frame.append(row)
-
-        sys.stdout.write("\n".join(frame))
-        sys.stdout.flush()
-
-        pos = (pos + 1) % height
-        time.sleep(0.1)
-
+def compile_road_animation():
+  frames = []
+  # get 60 frames
+  #for i in range(60):
+  #    frames.append(draw_frame_of_road())
+      
+  return frames
+    
+  
 if __name__ == "__main__":
-    animate_bar()
+    compile_road_animation()
+    animate_road()
